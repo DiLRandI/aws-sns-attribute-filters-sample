@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/sns"
+	"github.com/aws/aws-sdk-go-v2/service/sns/types"
 	"github.com/goombaio/namegenerator"
 )
 
@@ -33,10 +34,13 @@ func PublishToSNS(ctx context.Context) error {
 	}
 
 	// Initialize AWS session
-	sess := session.Must(session.NewSession())
+	conf, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return fmt.Errorf("Error loading AWS configuration: %v", err)
+	}
 
 	// Create SNS service client
-	snsSvc := sns.New(sess)
+	snsSvc := sns.NewFromConfig(conf)
 
 	v := 123
 	if time.Now().UTC().UnixNano()%2 == 0 {
@@ -49,7 +53,7 @@ func PublishToSNS(ctx context.Context) error {
 	}
 
 	// Publish message to SNS
-	_, err := snsSvc.Publish(&sns.PublishInput{
+	_, err = snsSvc.Publish(ctx, &sns.PublishInput{
 		TopicArn:          aws.String(snsTopicArn),
 		Message:           aws.String(message),
 		MessageAttributes: getMessageAttributes(messageAttributes),
@@ -63,8 +67,8 @@ func PublishToSNS(ctx context.Context) error {
 	return nil
 }
 
-func getMessageAttributes(messageAttributes MessageAttributes) map[string]*sns.MessageAttributeValue {
-	return map[string]*sns.MessageAttributeValue{
+func getMessageAttributes(messageAttributes MessageAttributes) map[string]types.MessageAttributeValue {
+	return map[string]types.MessageAttributeValue{
 		"myIntField": {
 			DataType:    aws.String("Number"),
 			StringValue: aws.String(fmt.Sprintf("%d", messageAttributes.MyIntField)),

@@ -22,6 +22,7 @@ functions:
     handler: bin/publisher
     package:
       artifact: bin/publisher.zip
+    memorySize: 128
     environment:
       SNS_TOPIC_ARN: !Ref MyTestTopic
     
@@ -29,6 +30,7 @@ functions:
     handler: bin/sqs-subscriber
     package:
       artifact: bin/sqs-subscriber.zip
+    memorySize: 128
     events:
       - sqs:
           arn: !GetAtt MyTestQueue.Arn
@@ -38,12 +40,13 @@ functions:
     handler: bin/sns-subscriber
     package:
       artifact: bin/sns-subscriber.zip
+    memorySize: 128
     events:
       - sns:
           topicName: MyTestTopic
           arn: !Ref MyTestTopic
           filterPolicy:
-            myIntField: ["456"]
+            myIntField: [ 456 ]
 
 resources:
   Resources:

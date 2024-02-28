@@ -21,8 +21,10 @@ This is a sample project to demonstrate how to use AWS SNS attribute filters to 
 - Click on `Test` and use `Hello-World` as the test event [Repeat this for several times]
   - The publisher will publish random message but with `myIntField` will have value either `123` or `456`
 - Navigate AWS Cloudwatch console and check the log groups for
-  - `-sns-subscriber` logs which you can see the messages received by the subscriber are only `456` related configuration can be identify here
-    [myIntField: ["456"]](https://github.com/DiLRandI/aws-sns-attribute-filters-sample/blob/b7d62d0e81a9d11d7cba784871d188163e645c2f/serverless.yml#L46-L47)
-  - `-sqs-subscriber` logs which you can see the messages received by the subscriber are only `123` related configuration can be identify here
-    [FilterPolicy:](https://github.com/DiLRandI/aws-sns-attribute-filters-sample/blob/b7d62d0e81a9d11d7cba784871d188163e645c2f/serverless.yml#L67-L69)
+  - `-sns-subscriber` logs which you can see the messages received by the subscriber are only `456` related configuration can be 
+    [identify here](https://github.com/DiLRandI/aws-sns-attribute-filters-sample/blob/5346bc9ad9e7e6c89c4ff3c434516de08e8a0455/serverless.yml#L48-L49)
+    
+  - `-sqs-subscriber` logs which you can see the messages received by the subscriber are only `123` related configuration can be 
+    [identify here](https://github.com/DiLRandI/aws-sns-attribute-filters-sample/blob/5346bc9ad9e7e6c89c4ff3c434516de08e8a0455/serverless.yml#L70-L72)
+    
 - The above configuration will be visible on the AWS Console SNS Topic under `MyTestTopic` -> `Subscription filter policy` section
