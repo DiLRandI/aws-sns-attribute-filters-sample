@@ -1,0 +1,88 @@
+service: sns-message-filter-test
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: provided.al2
+  architecture: x86_64
+  region: ap-southeast-1
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - sns:Publish
+          Resource: !Ref MyTestTopic
+package:
+  individually: true
+
+functions:
+  publisher:
+    handler: bin/publisher
+    package:
+      artifact: bin/publisher.zip
+    environment:
+      SNS_TOPIC_ARN: !Ref MyTestTopic
+    
+  sqs-subscriber:
+    handler: bin/sqs-subscriber
+    package:
+      artifact: bin/sqs-subscriber.zip
+    events:
+      - sqs:
+          arn: !GetAtt MyTestQueue.Arn
+          batchSize: 1
+
+  sns-subscriber:
+    handler: bin/sns-subscriber
+    package:
+      artifact: bin/sns-subscriber.zip
+    events:
+      - sns:
+          topicName: MyTestTopic
+          arn: !Ref MyTestTopic
+          filterPolicy:
+            myIntField: ["456"]
+
+resources:
+  Resources:
+    MyTestQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: MyTestQueue
+
+    MyTestTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: MyTestTopic
+
+    MyTestSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Protocol: sqs
+        TopicArn: !Ref MyTestTopic
+        Endpoint: !GetAtt MyTestQueue.Arn
+        RawMessageDelivery: true
+        FilterPolicy:
+          myIntField:
+            - 123
+    
+    MyTestQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: sns.amazonaws.com
+              Action: sqs:SendMessage
+              Resource: !GetAtt MyTestQueue.Arn
+              Condition:
+                ArnEquals:
+                  aws:SourceArn: !Ref MyTestTopic
+        Queues:
+          - !Ref MyTestQueue
+
+    
